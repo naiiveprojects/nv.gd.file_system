@@ -1,0 +1,35 @@
+; Engine configuration file.
+; It's best edited using the editor UI and not directly,
+; since the parameters that go here are not all obvious.
+;
+; Format:
+;   [section] ; section goes between []
+;   param=value ; assign values to parameters
+
+config_version=4
+
+[application]
+
+config/name="nv.gd.file_system"
+config/description="Godot engine 3.x plugin allowing FileSystem to be part of bottom panel, or swtich back to regular one."
+run/main_scene="res://init.tscn"
+boot_splash/image="res://naiive_trans_accent.png"
+config/icon="res://naiive_trans_accent.png"
+
+[editor_plugins]
+
+enabled=PoolStringArray( "res://addons/nv.gd.file_system/plugin.cfg" )
+
+[gui]
+
+common/drop_mouse_on_gui_input_disabled=true
+
+[physics]
+
+common/enable_pause_aware_picking=true
+
+[rendering]
+
+quality/driver/driver_name="GLES2"
+vram_compression/import_etc=true
+vram_compression/import_etc2=false
