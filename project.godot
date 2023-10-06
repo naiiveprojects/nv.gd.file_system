@@ -10,11 +10,10 @@ config_version=4
 
 [application]
 
-config/name="nv.gd.file_system"
-config/description="Godot engine 3.x plugin allowing FileSystem to be part of bottom panel, or swtich back to regular one."
-run/main_scene="res://init.tscn"
-boot_splash/image="res://naiive_trans_accent.png"
-config/icon="res://naiive_trans_accent.png"
+config/name="nv.file_system"
+config/description="Plugin to Enable Editor File System to dock at the bottom of the editor, similar to the layout found in Unreal Engine / Unity.
+
+You can switch between the standard location and the bottom dock by navigating to Projects > Tools > Switch File System Dock"
 
 [editor_plugins]
 
