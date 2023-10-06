@@ -7,8 +7,7 @@ const TITLE_TOOL_MENU_ITEM := "Switch File System Dock"
 ## Set `FileSytem` rect min size to make it look consisten with other panel. 
 const MIN_SIZE := 192 # Convert to Vector2
 
-## Hacky Refrence to the "Split Mode" button on `FileSystem`
-const SPLIT_BUTTON_HINT := "Toggle Split Mode"
+const TREE_STRETCH_RATIO := 0.25
 
 ## relative `TITLE` Button position
 const FILE_BUTTON_INDEX := 0
@@ -48,9 +47,43 @@ func _exit_tree() -> void:
 	# remove switch / toggle for FileSystem docking position
 	remove_tool_menu_item(TITLE_TOOL_MENU_ITEM)
 	
-	docked = true
-	_processing = false
-	switch_file_system_dock()
+	# Move file system to left panel
+	remove_control_from_bottom_panel(file_system)
+	add_control_to_dock(EditorPlugin.DOCK_SLOT_LEFT_BR, file_system)
+	
+	# Setup vertical container
+	box_container = VBoxContainer.new()
+	split_container = VSplitContainer.new()
+	file_system.rect_min_size = Vector2.ONE
+	# Refrences
+	var headder: Control = file_system.get_child(0) # BoxContainer
+	var body: Control = file_system.get_child(3) # SplitContainer
+	
+	# Apply new container
+	headder.replace_by(box_container, true)
+	body.replace_by(split_container, true)
+	
+	# Child Node Refrences
+	var split_button: Button = box_container.get_child(0).get_child(4)
+	var file_tree: Tree = split_container.get_child(0)
+	var file_item: VBoxContainer = split_container.get_child(1)
+	var item_view: ToolButton = file_item.get_child(0).get_child(2)
+	
+	# adjustment
+	split_button.visible = true
+	split_button.pressed = false
+	item_view.pressed = false
+	
+	file_tree.size_flags_stretch_ratio = TREE_STRETCH_RATIO
+	file_tree.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	file_item.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	
+	box_container.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	split_container.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	split_container.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	
+	for item in box_container.get_children():
+		item.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 
 
 func switch_file_system_dock(_value = null) -> void:
@@ -99,22 +132,26 @@ func switch_file_system_dock(_value = null) -> void:
 		
 		docked = false
 	
-	# Apply new container
-	file_system.get_child(0).replace_by(box_container, true)
-	file_system.get_child(3).replace_by(split_container, true)
+	# Refrences
+	var headder: Control = file_system.get_child(0) # BoxContainer
+	var body: Control = file_system.get_child(3) # SplitContainer
 	
-	# Readjust the tree and item list
+	# Apply new container
+	headder.replace_by(box_container, true)
+	body.replace_by(split_container, true)
+	
+	# Child Node Refrences
 	var split_button: Button = box_container.get_child(0).get_child(4)
 	var file_tree: Tree = split_container.get_child(0)
 	var file_item: VBoxContainer = split_container.get_child(1)
 	var item_view: ToolButton = file_item.get_child(0).get_child(2)
 	
+	# adjustment
 	split_button.visible = !docked
 	split_button.pressed = docked
 	item_view.pressed = !docked
 	
-	# Container adjustment
-	file_tree.size_flags_stretch_ratio = 0.2
+	file_tree.size_flags_stretch_ratio = TREE_STRETCH_RATIO
 	file_tree.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	file_item.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	
