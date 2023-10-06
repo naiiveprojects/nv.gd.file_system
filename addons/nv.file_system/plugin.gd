@@ -13,6 +13,9 @@ const SPLIT_BUTTON_HINT := "Toggle Split Mode"
 ## relative `TITLE` Button position
 const FILE_BUTTON_INDEX := 0
 
+## no race
+var _processing: bool = false
+
 ## The Editor FileSystem
 var file_system: Control
 
@@ -27,9 +30,6 @@ var split_container: Control
 
 ## Switch
 var docked: bool = false
-
-## no race
-var _processing: bool = false
 
 
 func _enter_tree() -> void:
@@ -63,6 +63,7 @@ func switch_file_system_dock(_value = null) -> void:
 		# Get file system
 		file_system = get_editor_interface().get_file_system_dock()
 		yield(get_tree(), "idle_frame")
+		
 		if file_system == null:
 			print_debug("Cant Find FileSystemDock")
 			_processing = false
@@ -96,9 +97,6 @@ func switch_file_system_dock(_value = null) -> void:
 		split_container = VSplitContainer.new()
 		file_system.rect_min_size = Vector2.ONE
 		
-#		yield(get_tree(), "idle_frame")
-#		if file_system_button:
-#			file_system_button.queue_free()
 		docked = false
 	
 	# Apply new container

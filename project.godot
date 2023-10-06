@@ -18,7 +18,7 @@ config/icon="res://naiive_trans_accent.png"
 
 [editor_plugins]
 
-enabled=PoolStringArray( "res://addons/nv.gd.file_system/plugin.cfg" )
+enabled=PoolStringArray( "res://addons/nv.file_system/plugin.cfg" )
 
 [gui]
 
