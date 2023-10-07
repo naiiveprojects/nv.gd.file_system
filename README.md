@@ -1,6 +1,6 @@
 # <img src="./assets/icon.svg" width="32" height="32"> nv file system
 
-✅ **for Godot Engine 3.x** | ➡️ [**for Godot Engine 4.x**](https://github.com/naiiveprojects/nv.gd.file_system/tree/3.x)
+✅ **for Godot Engine 3.x** | ➡️ [**for Godot Engine 4.x**](https://github.com/naiiveprojects/nv.gd.file_system/tree/4.x)
 
 Allow Editor FileSystem to dock at the bottom panel, similar to the layout found in Unreal Engine / Unity.
 
