@@ -6,7 +6,7 @@
 ;   [section] ; section goes between []
 ;   param=value ; assign values to parameters
 
-config_version=4
+config_version=5
 
 [application]
 
@@ -14,10 +14,11 @@ config/name="nv.file_system"
 config/description="Plugin to Enable Editor File System to dock at the bottom of the editor, similar to the layout found in Unreal Engine / Unity.
 
 You can switch between the standard location and the bottom dock by navigating to Projects > Tools > Switch File System Dock"
+config/features=PackedStringArray("4.1")
 
 [editor_plugins]
 
-enabled=PoolStringArray( "res://addons/nv.file_system/plugin.cfg" )
+enabled=PackedStringArray("res://addons/nv.file_system/plugin.cfg")
 
 [gui]
 
@@ -29,6 +30,6 @@ common/enable_pause_aware_picking=true
 
 [rendering]
 
+renderer/rendering_method="gl_compatibility"
 quality/driver/driver_name="GLES2"
 vram_compression/import_etc=true
-vram_compression/import_etc2=false
