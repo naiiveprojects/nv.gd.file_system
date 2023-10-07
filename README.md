@@ -1,6 +1,6 @@
 # <img src="./assets/icon.svg" width="32" height="32"> nv file system
 
-✅ **Godot Engine 4.x plugin** | ➡️ [**for Godot Engine 3.x**](https://github.com/naiiveprojects/nv.gd.file_system/tree/3.x)
+➡️ [**for Godot Engine 3.x**](https://github.com/naiiveprojects/nv.gd.file_system/tree/3.x) | ✅ **for Godot Engine 4.x**
 
 Allow Editor FileSystem to dock at the bottom panel, similar to the layout found in Unreal Engine / Unity.
 
@@ -33,7 +33,7 @@ git clone https://github.com/naiiveprojects/nv.gd.file_system/tree/4.x.git
 ```
 
 Alternatively, you can
-[download a ZIP archive](https://github.com/naiiveprojects/nv.gd.file_system/archive/master.zip)
+[download a ZIP archive](https://github.com/naiiveprojects/nv.gd.file_system/archive/refs/heads/4.x.zip)
 if you do not have Git installed.
 
 - Move the `addons/` folder to your project folder.
