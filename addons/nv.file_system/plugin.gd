@@ -38,6 +38,9 @@ func _enter_tree() -> void:
 	# add switch / toggle to control FileSystem docking position
 	add_tool_menu_item(TITLE_TOOL_MENU_ITEM, self, "switch_file_system_dock")
 	
+	# Get file system
+	file_system = get_editor_interface().get_file_system_dock()
+	
 	docked = false
 	_processing = false
 	switch_file_system_dock()
@@ -47,6 +50,9 @@ func _exit_tree() -> void:
 	# remove switch / toggle for FileSystem docking position
 	remove_tool_menu_item(TITLE_TOOL_MENU_ITEM)
 	
+	if !docked:
+		return
+	
 	# Move file system to left panel
 	remove_control_from_bottom_panel(file_system)
 	add_control_to_dock(EditorPlugin.DOCK_SLOT_LEFT_BR, file_system)
@@ -55,6 +61,7 @@ func _exit_tree() -> void:
 	box_container = VBoxContainer.new()
 	split_container = VSplitContainer.new()
 	file_system.rect_min_size = Vector2.ONE
+	
 	# Refrences
 	var headder: Control = file_system.get_child(0) # BoxContainer
 	var body: Control = file_system.get_child(3) # SplitContainer
@@ -74,7 +81,6 @@ func _exit_tree() -> void:
 	split_button.pressed = false
 	item_view.pressed = false
 	
-	file_tree.size_flags_stretch_ratio = TREE_STRETCH_RATIO
 	file_tree.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	file_item.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	
@@ -92,20 +98,10 @@ func switch_file_system_dock(_value = null) -> void:
 	
 	_processing = true
 	
-	if !file_system:
-		# Get file system
-		file_system = get_editor_interface().get_file_system_dock()
-		yield(get_tree(), "idle_frame")
-		
-		if file_system == null:
-			print_debug("Cant Find FileSystemDock")
-			_processing = false
-			return
-	
 	if !docked:
+		docked = true
 		# Move file system to bottom panel
 		remove_control_from_docks(file_system)
-		
 		yield(get_tree(), "idle_frame")
 		file_system_button = add_control_to_bottom_panel(file_system, TITLE)
 		
@@ -116,12 +112,13 @@ func switch_file_system_dock(_value = null) -> void:
 		
 		# Move file button
 		file_system_button.get_parent().move_child(file_system_button, FILE_BUTTON_INDEX)
-		docked = true
+		yield(get_tree(), "idle_frame")
+		file_system_button.pressed = true
 	
 	else:
+		docked = false
 		# Move file system to left panel
 		remove_control_from_bottom_panel(file_system)
-		
 		yield(get_tree(), "idle_frame")
 		add_control_to_dock(EditorPlugin.DOCK_SLOT_LEFT_BR, file_system)
 		
@@ -129,8 +126,6 @@ func switch_file_system_dock(_value = null) -> void:
 		box_container = VBoxContainer.new()
 		split_container = VSplitContainer.new()
 		file_system.rect_min_size = Vector2.ONE
-		
-		docked = false
 	
 	# Refrences
 	var headder: Control = file_system.get_child(0) # BoxContainer
