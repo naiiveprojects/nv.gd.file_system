@@ -50,6 +50,9 @@ func _exit_tree() -> void:
 	# remove switch / toggle for FileSystem docking position
 	remove_tool_menu_item(TITLE_TOOL_MENU_ITEM)
 	
+	if !docked:
+		return
+	
 	# Move file system to left panel
 	remove_control_from_bottom_panel(file_system)
 	add_control_to_dock(EditorPlugin.DOCK_SLOT_LEFT_BR, file_system)
