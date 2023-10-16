@@ -16,10 +16,6 @@ config/description="Plugin to Enable Editor File System to dock at the bottom of
 You can switch between the standard location and the bottom dock by navigating to Projects > Tools > Switch File System Dock"
 config/features=PackedStringArray("4.1")
 
-[editor_plugins]
-
-enabled=PackedStringArray("res://addons/nv.file_system/plugin.cfg")
-
 [gui]
 
 common/drop_mouse_on_gui_input_disabled=true

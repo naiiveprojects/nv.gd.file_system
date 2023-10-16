@@ -1,4 +1,4 @@
-# <img src="./assets/icon.svg" width="32" height="32"> nv file system
+# <img src="./assetlib/icon.svg" width="32" height="32"> nv file system
 
 ➡️ [**for Godot Engine 3.x**](https://github.com/naiiveprojects/nv.gd.file_system/tree/3.x) | ✅ **for Godot Engine 4.x**
 
@@ -6,7 +6,7 @@ Allow Editor FileSystem to dock at the bottom panel, similar to the layout found
 
 ## Screenshots
 
-![editor_full](/assets/editor_full_4.x.png)
+![editor_full](/assetlib/editor_full_4.x.png)
 
 ## Installation
 
@@ -16,7 +16,7 @@ Allow Editor FileSystem to dock at the bottom panel, similar to the layout found
 - Navigate to the **AssetLib** tab at the top of the editor and search for
   "NV File System".
 - Install the
-  [*NV File System*](https://godotengine.org/asset-library/asset/)
+  [*NV File System*](https://godotengine.org/asset-library/asset/2228)
   plugin. Keep all files checked during installation.
 - In the editor, open **Project > Project Settings**, go to **Plugins**
   and enable the **NV FIle System** plugin.
@@ -42,9 +42,11 @@ if you do not have Git installed.
 
 ## Usage
 
-switch between the standard location and the bottom dock by navigating to `Projects > Tools > Switch File System Dock`
-
-![menu_item](/assets/menu_item_4.x.png)
+- switch between the standard location and the bottom dock by navigating to `Projects > Tools > File System > Switch File System Dock`
+  - ![menu_item](/assetlib/menu_item.png)
+- Alternatively, you can use the default shortcut `Alt + S` to toggle the dock location.
+- to customize the shortcut, you can modify the script in `addons/nv.file_system/nv.file_system.gd`
+  - ![menu_item](/assetlib/script_shortcut.png)
 
 ## License
 
