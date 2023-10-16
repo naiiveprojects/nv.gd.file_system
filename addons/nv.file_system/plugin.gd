@@ -162,6 +162,9 @@ func switch_file_system_dock(_value = null) -> void:
 	file_system_box = box_container
 	file_system_split = split_container
 	
+	# make sure changes has been apply before continue
+	yield(get_tree(), "idle_frame")
+	
 	# adjustment
 	file_system_split_view.pressed = docked
 	file_system_item_view.pressed = !docked
