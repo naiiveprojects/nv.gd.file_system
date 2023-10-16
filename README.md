@@ -6,7 +6,7 @@ Allow Editor FileSystem to dock at the bottom panel, similar to the layout found
 
 ## Screenshots
 
-![editor_full](/assetlib/editor_full_4.x.png)
+![editor_full](/assetlib/editor_full.png)
 
 ## Installation
 
