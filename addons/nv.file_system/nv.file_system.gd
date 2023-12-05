@@ -20,20 +20,20 @@ var docked: bool = false
 var file_system: FileSystemDock
 var file_system_box: BoxContainer
 var file_system_split: SplitContainer
-var file_system_vbox: VBoxContainer
-var file_system_hbox: HBoxContainer
-var file_system_vsplit: VSplitContainer
-var file_system_hsplit: HSplitContainer
+var file_system_vbox: BoxContainer
+var file_system_hbox: BoxContainer
+var file_system_vsplit: SplitContainer
+var file_system_hsplit: SplitContainer
 var file_system_split_view: Button
 var file_system_tree: Tree
 var file_system_item: VBoxContainer
 var file_system_item_view: Button
 
 ## Box container H/V
-var box_container: Control
+var box_container: BoxContainer
 
 ## split container H/V
-var split_container: Control
+var split_container: SplitContainer
 
 ## Tool button from : `add_control_to_bottom_panel()`
 var tool_button: Button
