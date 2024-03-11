@@ -1,16 +1,24 @@
+# warning-ignore-all: RETURN_VALUE_DISCARDED
+
 tool
 extends EditorPlugin
 
 const TITLE := "File System"
 const TITLE_TOOL_MENU_ITEM := "Switch File System Dock"
+const DATA_PATH := "res://addons/nv.file_system/data.txt"
 
 ## Set `FileSytem` rect min size to make it look consisten with other panel. 
-const MIN_SIZE := 192 # Convert to Vector2
+const MIN_SIZE := 320 # Convert to Vector2
 
 const TREE_STRETCH_RATIO := 0.25
 
 ## relative `TITLE` Button position
 const FILE_BUTTON_INDEX := 0
+
+## ...
+var data := {
+	"docked" : true
+}
 
 ## no race
 var _processing: bool = false
@@ -30,10 +38,10 @@ var file_system_item: VBoxContainer
 var file_system_item_view: ToolButton
 
 ## Box container H/V
-var box_container: Control
+var box_container: BoxContainer
 
 ## split container H/V
-var split_container: Control
+var split_container: SplitContainer
 
 ## Tool button from : `add_control_to_bottom_panel()`
 var tool_button: ToolButton
@@ -80,15 +88,18 @@ func _enter_tree() -> void:
 	file_system_split_view = file_system_vbox.get_child(0).get_child(4)
 	file_system_item_view = file_system_item.get_child(0).get_child(2)
 	
-	switch_file_system_dock()
+	load_data()
 
 
 func _exit_tree() -> void:
 	# remove switch / toggle for FileSystem docking position
 	remove_tool_menu_item(TITLE)
 	
-	if !docked:
-		return
+	# Saving
+	data.docked = docked
+	save_data()
+	
+	if !docked: return
 	
 	## Duplicate since we cannot call function successfully when exit tree.
 	
@@ -124,9 +135,35 @@ func _exit_tree() -> void:
 		item.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 
 
-func switch_file_system_dock(_value = null) -> void:
-	if _processing:
+func load_data() -> void:
+	var file := File.new()
+	var err = file.open(DATA_PATH, File.READ_WRITE)
+	
+	if err != OK:
+		file.close()
+		save_data(true)
 		return
+	
+	data = str2var(file.get_as_text())
+	file.close()
+	
+	if data.docked != docked:
+		switch_file_system_dock()
+
+
+func save_data(switch: bool = false) -> void:
+	var file := File.new()
+	var err = file.open(DATA_PATH, File.WRITE_READ)
+	
+	file.store_string(var2str(data))
+	file.close()
+	
+	if switch:
+		switch_file_system_dock()
+
+
+func switch_file_system_dock(_value = null) -> void:
+	if _processing: return
 	
 	_processing = true
 	
