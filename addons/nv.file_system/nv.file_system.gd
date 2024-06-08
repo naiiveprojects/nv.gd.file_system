@@ -1,16 +1,24 @@
+# warning-ignore-all: RETURN_VALUE_DISCARDED
+
 @tool
 extends EditorPlugin
 
 const TITLE := "File System"
-const TITLE_TOOL_MENU_ITEM := "Switch File System Dock"
+const TITLE_TOOL_MENU_SWITCH := "Switch File System Dock"
+const TITLE_TOOL_MENU_SHOW := "Show/Hide File System Dock (Bottom Dock)"
+const DATA_PATH := "res://addons/nv.file_system/config.cfg"
 
 ## Set `FileSytem` rect min size to make it look consisten with other panel. 
-const MIN_SIZE := 192 # Convert to Vector2
+const MIN_SIZE := Vector2i.ONE * 320
 
 const TREE_STRETCH_RATIO := 0.25
 
 ## relative `TITLE` Button position
 const FILE_BUTTON_INDEX := 0
+
+var config := {
+	"docked" : true
+}
 
 ## no race
 var _processing: bool = false
@@ -28,6 +36,7 @@ var file_system_split_view: Button
 var file_system_tree: Tree
 var file_system_item: VBoxContainer
 var file_system_item_view: Button
+var file_system_origin: Control
 
 ## Box container H/V
 var box_container: BoxContainer
@@ -42,17 +51,26 @@ var submenu_item: PopupMenu
 
 func _enter_tree() -> void:
 	## ------- CUSTOMIZE SHORTCUT ------- ##
-	var shortcut := InputEventKey.new()
-	shortcut.alt_pressed = true
-	shortcut.keycode = KEY_S
+	var shortcut_switch := InputEventKey.new()
+	shortcut_switch.alt_pressed = true
+	shortcut_switch.keycode = KEY_S
+	
+	var shortcut_show := InputEventKey.new()
+	shortcut_show.ctrl_pressed = true
+	shortcut_show.keycode = KEY_SPACE
 	## ------- CUSTOMIZE SHORTCUT ------- ##
 	
 	# add switch / toggle to control FileSystem docking position
 	submenu_item = PopupMenu.new()
 	submenu_item.add_item(
-			TITLE_TOOL_MENU_ITEM,
+			TITLE_TOOL_MENU_SWITCH,
 			0,
-			shortcut.get_keycode_with_modifiers()
+			shortcut_switch.get_keycode_with_modifiers()
+	)
+	submenu_item.add_item(
+			TITLE_TOOL_MENU_SHOW,
+			1,
+			shortcut_show.get_keycode_with_modifiers()
 	)
 	submenu_item.index_pressed.connect(switch_file_system_dock)
 	
@@ -76,26 +94,30 @@ func _enter_tree() -> void:
 	file_system_split_view = file_system_vbox.get_child(0).get_child(4)
 	file_system_item_view = file_system_item.get_child(0).get_child(2)
 	
-	switch_file_system_dock()
+	await get_tree().process_frame
+	load_config()
 
 
 func _exit_tree() -> void:
 	# remove switch / toggle for FileSystem docking position
 	remove_tool_menu_item(TITLE)
 	
-	if !docked:
-		return
+	# Saving
+	config.docked = docked
+	save_config()
+	
+	if !docked: return
 	
 	## Duplicate since we cannot call function successfully when exit tree.
 	
 	# Move file system to left panel
 	remove_control_from_bottom_panel(file_system)
-	add_control_to_dock(EditorPlugin.DOCK_SLOT_LEFT_BR, file_system)
+	file_system_origin.add_child(file_system)
 	
 	# Setup vertical container
 	box_container = file_system_vbox
 	split_container = file_system_vsplit
-	file_system.custom_minimum_size = Vector2.ONE
+	file_system.rect_min_size = Vector2.ONE
 	
 	# Refrences
 	file_system_box = file_system.get_child(0) # BoxContainer
@@ -120,14 +142,48 @@ func _exit_tree() -> void:
 		item.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 
 
-func switch_file_system_dock(_value = null) -> void:
+func load_config() -> void:
+	var cfg := ConfigFile.new()
+	var err = cfg.load(DATA_PATH)
+	
+	if err != OK:
+		save_config(true)
+		return
+	
+	for item in config.keys():
+		config[item] = cfg.get_value(TITLE, item, config.get(item))
+	
+	if config.docked != docked:
+		switch_file_system_dock()
+
+
+func save_config(switch: bool = false) -> void:
+	var cfg := ConfigFile.new()
+	
+	for item in config.keys():
+		cfg.set_value(TITLE, item, config.get(item))
+	
+	cfg.save(DATA_PATH)
+	
+	if switch:
+		switch_file_system_dock()
+
+
+func switch_file_system_dock(value: int = OK) -> void:
 	if _processing:
+		return
+	
+	if value != OK:
+		if docked:
+			tool_button.button_pressed = !tool_button.button_pressed 
 		return
 	
 	_processing = true
 	
 	if !docked:
 		docked = true
+		file_system_origin = file_system.get_parent()
+		
 		# Move file system to bottom panel
 		remove_control_from_docks(file_system)
 		tool_button = add_control_to_bottom_panel(file_system, TITLE)
@@ -135,7 +191,7 @@ func switch_file_system_dock(_value = null) -> void:
 		# Setup horizontal container
 		box_container = file_system_hbox
 		split_container = file_system_hsplit
-		file_system.custom_minimum_size = Vector2.ONE * MIN_SIZE
+		file_system.custom_minimum_size = MIN_SIZE
 		
 		# Move file button
 		tool_button.get_parent().move_child(tool_button, FILE_BUTTON_INDEX)
@@ -145,7 +201,7 @@ func switch_file_system_dock(_value = null) -> void:
 		docked = false
 		# Move file system to left panel
 		remove_control_from_bottom_panel(file_system)
-		add_control_to_dock(EditorPlugin.DOCK_SLOT_LEFT_BR, file_system)
+		file_system_origin.add_child(file_system)
 		
 		# Setup vertical container
 		box_container = file_system_vbox
