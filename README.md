@@ -2,7 +2,7 @@
 
 ✅ **for Godot Engine 3.x** | ➡️ [**for Godot Engine 4.x**](https://github.com/naiiveprojects/nv.gd.file_system/tree/4.x)
 
-Allow Editor FileSystem to dock at the bottom panel, similar to the layout found in Unreal Engine / Unity.
+Allow Editor FileSystem to dock at the bottom panel, similar to the layout found in Unreal Engine / Unity, with Menu & Shortcuts to Switch & show/hide the File System.
 
 ## Screenshots
 
@@ -44,13 +44,13 @@ if you do not have Git installed.
 
 - switch between the standard location and the bottom dock by navigating to `Projects > Tools > File System > Switch File System Dock`
   - ![menu_item](/assetlib/menu_item.png)
-- Alternatively, you can use the default shortcut `Alt + S` to toggle the dock location.
+- Alternatively, you can use the default shortcut `Alt + S` to toggle the dock location and `Control + Space` to show / hide the file system when docked on the bottom.
 - to customize the shortcut, you can modify the script in `addons/nv.file_system/nv.file_system.gd`
   - ![menu_item](/assetlib/script_shortcut.png)
 
 ## License
 
-Copyright © 2023 NAIIVE and contributors
+Copyright © 2024 NAIIVE and contributors
 
 Unless otherwise specified, files in this repository are licensed under the
 MIT license. See [LICENSE](LICENSE) for more information.
