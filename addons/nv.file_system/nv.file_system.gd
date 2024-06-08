@@ -5,7 +5,7 @@ extends EditorPlugin
 
 const TITLE := "File System"
 const TITLE_TOOL_MENU_SWITCH := "Switch File System Dock"
-const TITLE_TOOL_MENU_SHOW := "Show/Hidde File System (docked)"
+const TITLE_TOOL_MENU_SHOW := "Show/Hide File System Dock (Bottom Dock)"
 const DATA_PATH := "res://addons/nv.file_system/config.cfg"
 
 ## Set `FileSytem` rect min size to make it look consisten with other panel. 
