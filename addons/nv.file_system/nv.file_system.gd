@@ -155,7 +155,7 @@ func load_config() -> void:
 		return
 	
 	for item in config.keys():
-		cfg.get_value(TITLE, item, config.get(item))
+		config[item] = cfg.get_value(TITLE, item, config.get(item))
 	
 	if config.docked != docked:
 		switch_file_system_dock()
