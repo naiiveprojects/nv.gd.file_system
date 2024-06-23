@@ -9,20 +9,17 @@ const TITLE_TOOL_MENU_SHOW := "Show/Hide File System Dock (Bottom Dock)"
 const DATA_PATH := "res://addons/nv.file_system/config.cfg"
 
 ## Set `FileSytem` rect min size to make it look consisten with other panel. 
-const MIN_SIZE := 320 # Convert to Vector2
-
+const MIN_SIZE := Vector2.ONE * 320
 const TREE_STRETCH_RATIO := 0.25
 
 ## relative `TITLE` Button position
 const FILE_BUTTON_INDEX := 0
 
-var config := {
-	"docked" : true
-}
-
-## no race
-var _processing: bool = false
+var _switching: bool = false
 var docked: bool = false
+
+var config := { "docked" : true }
+
 
 ## The Editor FileSystem
 var file_system: FileSystemDock
@@ -35,13 +32,10 @@ var file_system_hsplit: HSplitContainer
 var file_system_split_view: Button
 var file_system_tree: Tree
 var file_system_item: VBoxContainer
-var file_system_item_view: ToolButton
 var file_system_origin: Control
 
-## Box container H/V
+## container H/V
 var box_container: BoxContainer
-
-## split container H/V
 var split_container: SplitContainer
 
 ## Tool button from : `add_control_to_bottom_panel()`
@@ -96,9 +90,8 @@ func _enter_tree() -> void:
 	file_system_tree = file_system_vsplit.get_child(0)
 	file_system_item = file_system_vsplit.get_child(1)
 	file_system_split_view = file_system_vbox.get_child(0).get_child(4)
-	file_system_item_view = file_system_item.get_child(0).get_child(2)
+	file_system_split_view.connect("toggled", self, "_split_view_toggled")
 	
-	yield(get_tree(), "idle_frame")
 	load_config()
 
 
@@ -110,7 +103,8 @@ func _exit_tree() -> void:
 	config.docked = docked
 	save_config()
 	
-	if !docked: return
+	if !docked:
+		return
 	
 	## Duplicate since we cannot call function successfully when exit tree.
 	
@@ -133,7 +127,6 @@ func _exit_tree() -> void:
 	
 	# adjustment
 	file_system_split_view.pressed = false
-	file_system_item_view.pressed = false
 	
 	file_system_tree.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	file_system_item.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -151,7 +144,7 @@ func load_config() -> void:
 	var err = cfg.load(DATA_PATH)
 	
 	if err != OK:
-		save_config(true)
+		switch_file_system_dock()
 		return
 	
 	for item in config.keys():
@@ -161,20 +154,17 @@ func load_config() -> void:
 		switch_file_system_dock()
 
 
-func save_config(switch: bool = false) -> void:
+func save_config() -> void:
 	var cfg := ConfigFile.new()
 	
 	for item in config.keys():
 		cfg.set_value(TITLE, item, config.get(item))
 	
 	cfg.save(DATA_PATH)
-	
-	if switch:
-		switch_file_system_dock()
 
 
 func switch_file_system_dock(value: int = OK) -> void:
-	if _processing:
+	if _switching:
 		return
 	
 	if value != OK:
@@ -182,7 +172,7 @@ func switch_file_system_dock(value: int = OK) -> void:
 			tool_button.pressed = !tool_button.pressed 
 		return
 	
-	_processing = true
+	_switching = true
 	
 	if !docked:
 		docked = true
@@ -195,10 +185,12 @@ func switch_file_system_dock(value: int = OK) -> void:
 		# Setup horizontal container
 		box_container = file_system_hbox
 		split_container = file_system_hsplit
-		file_system.rect_min_size = Vector2.ONE * MIN_SIZE
+		file_system.rect_min_size = MIN_SIZE
 		
 		# Move file button
 		tool_button.get_parent().move_child(tool_button, FILE_BUTTON_INDEX)
+		
+		# Show File System immediately
 		tool_button.pressed = true
 	
 	else:
@@ -223,7 +215,6 @@ func switch_file_system_dock(value: int = OK) -> void:
 	
 	# adjustment
 	file_system_split_view.pressed = docked
-	file_system_item_view.pressed = !docked
 	
 	file_system_tree.size_flags_stretch_ratio = TREE_STRETCH_RATIO
 	file_system_tree.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -236,4 +227,9 @@ func switch_file_system_dock(value: int = OK) -> void:
 	for item in box_container.get_children():
 		item.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	
-	_processing = false
+	_switching = false
+
+
+func _split_view_toggled(value: bool) -> void:
+	if value != docked:
+		switch_file_system_dock()
