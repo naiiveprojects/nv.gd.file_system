@@ -42,11 +42,11 @@ if you do not have Git installed.
 
 ## Usage
 
-- switch between the standard location and the bottom dock by navigating to `Projects > Tools > File System > Switch File System Dock`
-  - ![menu_item](/assetlib/menu_item.png)
-- Alternatively, you can use the default shortcut `Alt + S` to toggle the dock location and `Control + Space` to show / hide the file system when docked on the bottom.
-- to customize the shortcut, you can modify the script in `addons/nv.file_system/nv.file_system.gd`
-  - ![menu_item](/assetlib/script_shortcut.png)
+1. Use Shortcut `Alt + S` to toggle the dock location and `Control + Space` to show / hide the file system when docked on the bottom. 
+2. Or Press FileSystem `Split Mode button`.
+   - ![menu_item](/assetlib/split_mode.png)
+3. you can also use option in project menu by navigating to `Projects > Tools > File System > Switch File System Dock`
+4. to customize the shortcut, you can modify the script in `addons/nv.file_system/nv.file_system.gd` below first code commented by `## ------- CUSTOMIZE SHORTCUT ------- ##`
 
 ## License
 

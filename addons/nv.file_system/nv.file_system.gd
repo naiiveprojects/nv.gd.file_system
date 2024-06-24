@@ -3,46 +3,30 @@
 @tool
 extends EditorPlugin
 
-const TITLE := "File System"
-const TITLE_TOOL_MENU_SWITCH := "Switch File System Dock"
-const TITLE_TOOL_MENU_SHOW := "Show/Hide File System Dock (Bottom Dock)"
-const DATA_PATH := "res://addons/nv.file_system/config.cfg"
+enum { SWITCH, TOGGLE }
+
+const TITLE: String = "File System"
+const TITLE_TOOL_MENU_SWITCH: String = "Switch File System Dock"
+const TITLE_TOOL_MENU_SHOW: String = "Show/Hide File System Dock (Bottom Dock)"
+const PATH_CONFIG: String = "res://addons/nv.file_system/config.cfg"
+const SPLIT_BUTTON_STATE_MAX: int = 3
 
 ## Set `FileSytem` rect min size to make it look consisten with other panel. 
-const MIN_SIZE := Vector2i.ONE * 320
-
-const TREE_STRETCH_RATIO := 0.25
+const MIN_SIZE: Vector2i = Vector2i.ONE * 320
 
 ## relative `TITLE` Button position
-const FILE_BUTTON_INDEX := 0
+const FILE_BUTTON_INDEX: int = 0
 
-var config := {
-	"docked" : true
-}
-
-## no race
-var _processing: bool = false
+var config :Dictionary = { "docked" : true }
+var _switching: bool = false
 var docked: bool = false
 
 ## The Editor FileSystem
 var file_system: FileSystemDock
-var file_system_box: BoxContainer
-var file_system_split: SplitContainer
-var file_system_vbox: BoxContainer
-var file_system_hbox: BoxContainer
 var file_system_vsplit: SplitContainer
-var file_system_hsplit: SplitContainer
-var file_system_split_view: Button
-var file_system_tree: Tree
 var file_system_item: VBoxContainer
-var file_system_item_view: Button
+var file_system_split_view: Button
 var file_system_origin: Control
-
-## Box container H/V
-var box_container: BoxContainer
-
-## split container H/V
-var split_container: SplitContainer
 
 ## Tool button from : `add_control_to_bottom_panel()`
 var tool_button: Button
@@ -50,6 +34,9 @@ var submenu_item: PopupMenu
 
 
 func _enter_tree() -> void:
+	# wait until editor fully initialize
+	await get_tree().process_frame
+	
 	## ------- CUSTOMIZE SHORTCUT ------- ##
 	var shortcut_switch := InputEventKey.new()
 	shortcut_switch.alt_pressed = true
@@ -64,12 +51,12 @@ func _enter_tree() -> void:
 	submenu_item = PopupMenu.new()
 	submenu_item.add_item(
 			TITLE_TOOL_MENU_SWITCH,
-			0,
+			SWITCH,
 			shortcut_switch.get_keycode_with_modifiers()
 	)
 	submenu_item.add_item(
 			TITLE_TOOL_MENU_SHOW,
-			1,
+			TOGGLE,
 			shortcut_show.get_keycode_with_modifiers()
 	)
 	submenu_item.index_pressed.connect(switch_file_system_dock)
@@ -78,21 +65,30 @@ func _enter_tree() -> void:
 	
 	# wait until editor fully initialize
 	await get_tree().process_frame
-	file_system = get_editor_interface().get_file_system_dock()
 	
 	# Create references
-	file_system_box = file_system.get_child(0) # BoxContainer
-	file_system_split = file_system.get_child(3) # SplitContainer
-	
-	file_system_hbox = HBoxContainer.new()
-	file_system_hsplit = HSplitContainer.new()
-	file_system_vbox = file_system_box
-	file_system_vsplit = file_system_split
-	
-	file_system_tree = file_system_vsplit.get_child(0)
+	file_system = get_editor_interface().get_file_system_dock()
+	file_system_vsplit = file_system.get_child(3)
 	file_system_item = file_system_vsplit.get_child(1)
-	file_system_split_view = file_system_vbox.get_child(0).get_child(4)
-	file_system_item_view = file_system_item.get_child(0).get_child(2)
+	file_system_split_view = file_system.get_child(0).get_child(0).get_child(4)
+	
+	var unit: Dictionary = {
+			'FileSystem': file_system,
+			'VSplitContainer:3': file_system_vsplit,
+			'VBoxContainer:3.1': file_system_item,
+			'SplitModeButton:0.0.4': file_system_split_view,
+	}
+	
+	for u in unit.keys():
+		if unit[u] == null:
+			print('{}\n{}{}'.format(['nv.file_system', "Failed Creating a reference for : ", u], '{}'))
+			return
+	
+	for node in file_system_vsplit.get_children():
+		node.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	file_system_vsplit.get_child(0).size_flags_stretch_ratio = 0.25
+	
+	file_system.display_mode_changed.connect(_display_mode_changed)
 	
 	await get_tree().process_frame
 	load_config()
@@ -108,46 +104,18 @@ func _exit_tree() -> void:
 	
 	if !docked: return
 	
-	## Duplicate since we cannot call function successfully when exit tree.
-	
-	# Move file system to left panel
+	# Move file system to last known tab
 	remove_control_from_bottom_panel(file_system)
 	file_system_origin.add_child(file_system)
-	
-	# Setup vertical container
-	box_container = file_system_vbox
-	split_container = file_system_vsplit
-	file_system.rect_min_size = Vector2.ONE
-	
-	# Refrences
-	file_system_box = file_system.get_child(0) # BoxContainer
-	file_system_split = file_system.get_child(3) # SplitContainer
-	
-	# Apply new container
-	file_system_box.replace_by(box_container, true)
-	file_system_split.replace_by(split_container, true)
-	
-	# adjustment
-	file_system_split_view.button_pressed = false
-	file_system_item_view.button_pressed = false
-	
-	file_system_tree.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	file_system_item.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	
-	box_container.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	split_container.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	split_container.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	
-	for item in box_container.get_children():
-		item.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	file_system.custom_minimum_size = Vector2.ONE
 
 
 func load_config() -> void:
 	var cfg := ConfigFile.new()
-	var err = cfg.load(DATA_PATH)
+	var err = cfg.load(PATH_CONFIG)
 	
 	if err != OK:
-		save_config(true)
+		switch_file_system_dock()
 		return
 	
 	for item in config.keys():
@@ -157,40 +125,39 @@ func load_config() -> void:
 		switch_file_system_dock()
 
 
-func save_config(switch: bool = false) -> void:
+func save_config() -> void:
 	var cfg := ConfigFile.new()
 	
 	for item in config.keys():
 		cfg.set_value(TITLE, item, config.get(item))
 	
-	cfg.save(DATA_PATH)
-	
-	if switch:
-		switch_file_system_dock()
+	cfg.save(PATH_CONFIG)
 
 
-func switch_file_system_dock(value: int = OK) -> void:
-	if _processing:
-		return
+func switch_file_system_dock(value: int = SWITCH) -> void:
+	if _switching: return
 	
-	if value != OK:
+	if value != SWITCH:
 		if docked:
 			tool_button.button_pressed = !tool_button.button_pressed 
 		return
 	
-	_processing = true
+	_switching = true
 	
 	if !docked:
 		docked = true
 		file_system_origin = file_system.get_parent()
 		
+		for i in SPLIT_BUTTON_STATE_MAX:
+			if file_system_vsplit.vertical or !file_system_item.visible:
+				file_system_split_view.pressed.emit()
+				await get_tree().process_frame
+				continue
+			break
+		
 		# Move file system to bottom panel
 		remove_control_from_docks(file_system)
 		tool_button = add_control_to_bottom_panel(file_system, TITLE)
-		
-		# Setup horizontal container
-		box_container = file_system_hbox
-		split_container = file_system_hsplit
 		file_system.custom_minimum_size = MIN_SIZE
 		
 		# Move file button
@@ -199,37 +166,20 @@ func switch_file_system_dock(value: int = OK) -> void:
 	
 	else:
 		docked = false
-		# Move file system to left panel
+		
+		if file_system_item.visible:
+			file_system_split_view.pressed.emit()
+		
+		# Move file system to last known tab
 		remove_control_from_bottom_panel(file_system)
 		file_system_origin.add_child(file_system)
-		
-		# Setup vertical container
-		box_container = file_system_vbox
-		split_container = file_system_vsplit
 		file_system.custom_minimum_size = Vector2.ONE
 	
-	# Apply new container
-	file_system_box.replace_by(box_container, true)
-	file_system_split.replace_by(split_container, true)
-	file_system_box = box_container
-	file_system_split = split_container
-	
-	# make sure changes has been apply before continue
-	await get_tree().process_frame
-	
-	# adjustment
-	file_system_split_view.button_pressed = docked
-	file_system_item_view.button_pressed = !docked
-	
-	file_system_tree.size_flags_stretch_ratio = TREE_STRETCH_RATIO
-	file_system_tree.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	file_system_item.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	
-	box_container.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	split_container.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	split_container.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	
-	for item in box_container.get_children():
-		item.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	
-	_processing = false
+	_switching = false
+
+
+func _display_mode_changed() -> void:
+	if !file_system_vsplit.vertical and file_system_item.visible:
+		switch_file_system_dock()
+	elif docked and !file_system_item.visible:
+		switch_file_system_dock()
